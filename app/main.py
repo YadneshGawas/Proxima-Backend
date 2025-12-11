@@ -9,6 +9,11 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     db.init_app(app)
+
+     # 🔥 IMPORT ALL MODELS HERE BEFORE MIGRATION
+    from app.modules.users.models import User
+    from app.modules.hackathons.models import Hackathon   
+    
     migrate.init_app(app, db)
     jwt.init_app(app)
     bcrypt.init_app(app)
