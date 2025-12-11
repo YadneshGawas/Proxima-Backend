@@ -50,13 +50,13 @@ class HackathonService:
     
     @staticmethod
     def get_hackathons(
-        organizer_id: int,
         page: int = 1,
         limit: int = 10,
         mode: Optional[str] = None,
         participation_type: Optional[str] = None,
         tag: Optional[str] = None,
         search: Optional[str] = None,
+        organizer_id: Optional[str] = None
         
     ) -> tuple[list[Hackathon], int]:
 
@@ -69,8 +69,9 @@ class HackathonService:
 
             if participation_type:
                 query = query.filter(Hackathon.participation_type == participation_type)
-
+            
             if organizer_id:
+                print("Filtering by organizer:", organizer_id)
                 query = query.filter(Hackathon.organizer_id == organizer_id)
 
             if tag:

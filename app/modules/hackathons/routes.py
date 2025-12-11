@@ -25,7 +25,7 @@ def create_hackathon():
     return jsonify(HackathonResponse.from_orm(hackathon).dict()), 201
 
 @hackathon_bp.route("/all", methods=["GET"])
-@jwt_required()
+@jwt_required(optional=True)
 def list_hackathons():
 
     # Query params
@@ -38,7 +38,9 @@ def list_hackathons():
     search = request.args.get("search")
 
 
-    organizer_id = get_jwt_identity()
+   # If ?mine=true → fetch hackathons created by this user
+    mine = request.args.get("mine", "false").lower() == "true"
+    organizer_id = get_jwt_identity() if mine else None
 
     hackathons, total = HackathonService.get_hackathons(
         organizer_id=organizer_id,
