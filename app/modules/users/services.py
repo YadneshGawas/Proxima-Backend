@@ -1,7 +1,7 @@
 from app.extensions import db
 from .models import User
 from .utils import hash_password, check_password, generate_access_token
-from .exceptions import UserAlreadyExistsError
+from .exceptions import UserAlreadyExistsError,UserNotFoundError,InvalidCredentialsError
 
 class AuthService:
     @staticmethod
@@ -37,7 +37,7 @@ class AuthService:
 
         # If user is missing OR password doesn't match, reject login
         if (not user) or (not check_password(user.password_hash, password)):
-            raise Exception("Invalid email or password.")
+            raise InvalidCredentialsError("Invalid email or password.")
 
         access_token = generate_access_token(user_id = str(user.id))
         return {
@@ -60,7 +60,7 @@ class AuthService:
     def get_current_user(user_id:int)->User:
         user = User.query.get(user_id)
         if not user:
-            raise Exception("User not found.")
+            raise UserNotFoundError("User not found.")
         
         return {
             "id": user.id,
@@ -73,7 +73,7 @@ class AuthService:
     def update_user(user_id:int,data)->User:
         user = User.query.get(user_id)
         if not user:
-            raise Exception("User not found.")
+            raise UserNotFoundError("User not found.")
         
         if data.get("name"):
             user.name = data["name"]
@@ -90,5 +90,5 @@ class AuthService:
                 "name": user.name,
                 "email": user.email
             }         
-        },200   
+        }   
         

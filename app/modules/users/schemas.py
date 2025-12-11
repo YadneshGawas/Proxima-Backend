@@ -1,4 +1,5 @@
 from pydantic import EmailStr, BaseModel, Field
+from typing import Optional
 
 class RegisterSchema(BaseModel):
     name: str = Field(..., min_length=3, description="The user's name")
@@ -27,5 +28,8 @@ class LogoutResponse(BaseModel):
     message: str
 
 
-
+class UpdateUserSchema(BaseModel):
+    name: Optional[str] = Field(None, min_length=3, description="Updated name")
+    email: Optional[EmailStr] = Field(None, description="Updated email address")
+    password: Optional[str] = Field(None, min_length=8, description="Updated password")
 
