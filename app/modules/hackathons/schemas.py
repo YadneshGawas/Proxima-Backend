@@ -22,7 +22,15 @@ class HackathonCreateSchema(BaseModel):
     entry_fee: float = 0
     max_participants: Optional[int]
 
+    # NEW
+    status: Optional[str] = "upcoming"
+    image_url: Optional[str] = None
+    requirements: Optional[List[str]] = []
+    prizes: Optional[List[str]] = []
+
     tags: Optional[List[str]] = []
+
+   
 
 class HackathonResponse(BaseModel):
     id: str
@@ -40,6 +48,12 @@ class HackathonResponse(BaseModel):
     entry_fee: float
     max_participants: Optional[int]
     tags: List[str]
+     # NEW FIELDS
+    interested_count: int
+    status: str
+    image_url: Optional[str]
+    requirements: List[str]
+    prizes: List[str]
     created_at: datetime
 
     class Config:
@@ -65,6 +79,10 @@ class HackathonUpdateSchema(BaseModel):
     max_participants: Optional[int] = None
     tags: Optional[List[str]] = None
 
-    model_config = {
-        "extra": "forbid"
-    }
+     # NEW FIELDS
+    status: Optional[str] = None
+    image_url: Optional[str] = None
+    requirements: Optional[List[str]] = None
+    prizes: Optional[List[str]] = None
+
+   

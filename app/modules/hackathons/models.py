@@ -29,6 +29,14 @@ class Hackathon(db.Model):
 
     tags = db.Column(JSON, default=list)
 
+    interested_count = db.Column(db.Integer, default=0)
+    status = db.Column(db.Enum("upcoming", "ongoing", "completed", name="hackathon_status"), default="upcoming")
+
+    image_url = db.Column(db.String(500), nullable=True)
+
+    requirements = db.Column(JSON, default=list)
+    prizes = db.Column(JSON, default=list)
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     organizer = db.relationship("User", backref="hackathons")

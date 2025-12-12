@@ -37,6 +37,10 @@ class HackathonService:
             entry_fee=data.entry_fee,
             max_participants=data.max_participants,
             tags=data.tags or [],
+            status=data.status,
+            image_url=data.image_url,
+            requirements=data.requirements or [],
+            prizes=data.prizes or [],
         )
 
         try:
@@ -58,7 +62,8 @@ class HackathonService:
         participation_type: Optional[str] = None,
         tag: Optional[str] = None,
         search: Optional[str] = None,
-        organizer_id: Optional[str] = None
+        organizer_id: Optional[str] = None,
+        status: Optional[str] = None
         
     ) -> tuple[list[Hackathon], int]:
 
@@ -75,6 +80,9 @@ class HackathonService:
             if organizer_id:
                 print("Filtering by organizer:", organizer_id)
                 query = query.filter(Hackathon.organizer_id == organizer_id)
+            
+            if status:
+                query = query.filter(Hackathon.status == status)
 
             if tag:
                 query = query.filter(Hackathon.tags.like(f'%"{tag}"%'))
@@ -160,3 +168,23 @@ class HackathonService:
             raise HackathonNotFoundError("Hackathon not found.")
 
         return hackathon
+
+    @staticmethod
+    def toggle_interest(hackathon_id: str, increment: bool = True):
+        hackathon = Hackathon.query.get(hackathon_id)
+
+        if not hackathon:
+            raise HackathonNotFoundError("Hackathon not found.")
+
+        if increment:
+            hackathon.interested_count += 1
+        else:
+            hackathon.interested_count = max(0, hackathon.interested_count - 1)
+
+        try:
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            raise HackathonCreateError("Failed to update interest count.")
+
+        return hackathon.interested_count

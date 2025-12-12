@@ -36,6 +36,7 @@ def list_hackathons():
     participation_type = request.args.get("participation_type")
     tag = request.args.get("tag")
     search = request.args.get("search")
+    status = request.args.get("status")
 
 
    # If ?mine=true → fetch hackathons created by this user
@@ -49,7 +50,8 @@ def list_hackathons():
         mode=mode,
         participation_type=participation_type,
         tag=tag,
-        search=search
+        search=search,
+        status=status
         )
 
     results = [HackathonResponse.from_orm(h).dict() for h in hackathons]
@@ -99,3 +101,19 @@ def get_hackathon(hackathon_id):
 
     return jsonify(HackathonResponse.from_orm(hackathon).dict()), 200
 
+@hackathon_bp.route("/interest/<hackathon_id>", methods=["POST"])
+@jwt_required()
+def update_interest(hackathon_id):
+    action = request.json.get("action", "increment")  # or decrement
+
+    increment = action == "increment"
+
+    new_count = HackathonService.toggle_interest(
+        hackathon_id=hackathon_id,
+        increment=increment
+    )
+
+    return jsonify({
+        "hackathon_id": hackathon_id,
+        "interested_count": new_count
+    }), 200
