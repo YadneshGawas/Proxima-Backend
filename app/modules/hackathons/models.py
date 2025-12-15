@@ -40,3 +40,19 @@ class Hackathon(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     organizer = db.relationship("User", backref="hackathons")
+
+class HackathonInterest(db.Model):
+    __tablename__ = "hackathon_interests"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String, db.ForeignKey("users.id"), nullable=False)
+    hackathon_id = db.Column(
+        db.String,
+        db.ForeignKey("hackathons.id"),
+        nullable=False
+    )
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "hackathon_id", name="uq_user_hackathon"),
+    )

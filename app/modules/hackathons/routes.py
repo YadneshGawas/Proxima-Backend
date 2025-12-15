@@ -2,7 +2,8 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from .services import HackathonService
-from .schemas import HackathonCreateSchema,HackathonResponse, HackathonUpdateSchema 
+from .schemas import HackathonCreateSchema,HackathonResponse, HackathonUpdateSchema,HackathonResponse
+
 
 hackathon_bp = Blueprint("hackathons", __name__)
 
@@ -93,27 +94,28 @@ def delete_hackathon(hackathon_id):
 
 
 @hackathon_bp.route("/view/<hackathon_id>", methods=["GET"])
-@jwt_required()
+@jwt_required(optional=True)
 def get_hackathon(hackathon_id):
-    user_id = get_jwt_identity()  # returns None if not logged in
+    user_id = get_jwt_identity()  # None if not logged in
 
-    hackathon = HackathonService.get_hackathon_by_id(hackathon_id)
+    data = HackathonService.get_hackathon_by_id(
+        hackathon_id=hackathon_id,
+        user_id=user_id
+    )
 
-    return jsonify(HackathonResponse.from_orm(hackathon).dict()), 200
+    return jsonify(data), 200
+
+
 
 @hackathon_bp.route("/interest/<hackathon_id>", methods=["POST"])
 @jwt_required()
-def update_interest(hackathon_id):
-    action = request.json.get("action", "increment")  # or decrement
+def toggle_interest(hackathon_id):
+    user_id = get_jwt_identity()
 
-    increment = action == "increment"
-
-    new_count = HackathonService.toggle_interest(
-        hackathon_id=hackathon_id,
-        increment=increment
+    result = HackathonService.toggle_interest(
+        user_id=user_id,
+        hackathon_id=hackathon_id
     )
 
-    return jsonify({
-        "hackathon_id": hackathon_id,
-        "interested_count": new_count
-    }), 200
+    return jsonify(result), 200
+

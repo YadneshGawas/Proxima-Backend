@@ -5,11 +5,12 @@ from .exceptions import (
     HackathonNotFoundError,HackathonCreateError,HackathonQueryError,Teamsizelimit
     )
 from sqlalchemy.exc import SQLAlchemyError
-from .schemas import HackathonCreateSchema,HackathonUpdateSchema
+from .schemas import HackathonCreateSchema,HackathonUpdateSchema,HackathonResponse
 
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import Query
 from typing import Optional
+from app.modules.hackathons.models import HackathonInterest
 
 class HackathonService:
 
@@ -161,30 +162,84 @@ class HackathonService:
         return True
     
     @staticmethod
-    def get_hackathon_by_id(hackathon_id: str) -> Hackathon:
+    def get_hackathon_by_id(hackathon_id: str, user_id: str | None = None):
         hackathon = Hackathon.query.get(hackathon_id)
 
         if not hackathon:
             raise HackathonNotFoundError("Hackathon not found.")
 
-        return hackathon
+        is_interested = False
+
+        if user_id:
+            is_interested = (
+                HackathonInterest.query.filter_by(
+                    hackathon_id=hackathon_id,
+                    user_id=user_id
+                ).first()
+                is not None
+            )
+
+        # return both ORM + computed field
+        data = HackathonResponse.from_orm(hackathon).dict()
+        data["is_interested"] = is_interested
+
+        return data
+
+
+    # @staticmethod
+    # def toggle_interest(hackathon_id: str, increment: bool = True):
+    #     hackathon = Hackathon.query.get(hackathon_id)
+
+    #     if not hackathon:
+    #         raise HackathonNotFoundError("Hackathon not found.")
+
+    #     if increment:
+    #         hackathon.interested_count += 1
+    #     else:
+    #         hackathon.interested_count = max(0, hackathon.interested_count - 1)
+
+    #     try:
+    #         db.session.commit()
+    #     except SQLAlchemyError:
+    #         db.session.rollback()
+    #         raise HackathonCreateError("Failed to update interest count.")
+
+    #     return hackathon.interested_count
 
     @staticmethod
-    def toggle_interest(hackathon_id: str, increment: bool = True):
+    def toggle_interest(user_id: str, hackathon_id: str):
         hackathon = Hackathon.query.get(hackathon_id)
-
         if not hackathon:
             raise HackathonNotFoundError("Hackathon not found.")
 
-        if increment:
-            hackathon.interested_count += 1
-        else:
-            hackathon.interested_count = max(0, hackathon.interested_count - 1)
+        interest = HackathonInterest.query.filter_by(
+            user_id=user_id,
+            hackathon_id=hackathon_id
+        ).first()
 
         try:
+            if interest:
+                # User already interested → REMOVE interest
+                db.session.delete(interest)
+                hackathon.interested_count = max(0, hackathon.interested_count - 1)
+                is_interested = False
+            else:
+                # User not interested → ADD interest
+                db.session.add(
+                    HackathonInterest(
+                        user_id=user_id,
+                        hackathon_id=hackathon_id
+                    )
+                )
+                hackathon.interested_count += 1
+                is_interested = True
+
             db.session.commit()
+            return {
+                "interested_count": hackathon.interested_count,
+                "is_interested": is_interested
+            }
+
         except SQLAlchemyError:
             db.session.rollback()
-            raise HackathonCreateError("Failed to update interest count.")
-
-        return hackathon.interested_count
+            raise HackathonCreateError("Failed to update interest.")
