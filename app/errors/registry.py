@@ -11,6 +11,18 @@ from app.modules.hackathons.exceptions import (
     Teamsizelimit
 )
 
+from app.modules.registration.exceptions import (
+    HackathonNotFoundError,
+    RegistrationClosedError,
+    InvalidParticipationTypeError,
+    DuplicateRegistrationError,
+    TeamRequiredError,
+    TeamNotFoundError,
+    TeamMembershipError,
+    TeamSizeError,
+    RegistrationNotFoundError,
+)
+
 from app.modules.teams.exceptions import *
 from werkzeug.exceptions import Forbidden
 
@@ -33,6 +45,16 @@ ERROR_MAP = {
     MemberAlreadyExistsException : (400,"Team member already exists"),
     MemberNotFoundException : (404,"Teams member not found"),
     TeamNotFoundException : (404,"Team not found"),
+
+    #registrations
+    HackathonNotFoundError: (404, "Hackathon not found"),
+    RegistrationClosedError: (400, "Registration closed"),
+    DuplicateRegistrationError: (409, "Already registered"),
+    TeamRequiredError: (400, "Team is required"),
+    TeamNotFoundError: (404, "Team not found"),
+    TeamMembershipError: (403, "User not in team"),
+    TeamSizeError: (400, "Invalid team size"),
+    RegistrationNotFoundError: (404, "Registration not found"),
 
   
 }

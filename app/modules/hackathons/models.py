@@ -56,3 +56,4 @@ class HackathonInterest(db.Model):
     __table_args__ = (
         db.UniqueConstraint("user_id", "hackathon_id", name="uq_user_hackathon"),
     )
+
