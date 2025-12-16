@@ -81,3 +81,21 @@ def hackathon_registrations(hackathon_id):
     ]
 
     return jsonify(response), 200
+
+@registration_bp.route("/check/<hackathon_id>", methods=["GET"])
+@jwt_required()
+def check_registration(hackathon_id):
+    user_id = get_jwt_identity()
+
+    result = RegistrationService.check_user_registration(
+        hackathon_id=hackathon_id,
+        user_id=user_id
+    )
+
+    return jsonify(result), 200
+
+@registration_bp.route("/analytics/<hackathon_id>", methods=["GET"])
+@jwt_required()
+def hackathon_analytics(hackathon_id):
+    analytics = RegistrationService.get_hackathon_analytics(hackathon_id)
+    return jsonify(analytics), 200

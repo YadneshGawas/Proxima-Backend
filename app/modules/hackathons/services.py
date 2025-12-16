@@ -1,5 +1,7 @@
 import uuid
 from app.extensions import db
+from datetime import datetime, timezone
+
 from .models import Hackathon
 from .exceptions import (
     HackathonNotFoundError,HackathonCreateError,HackathonQueryError,Teamsizelimit
@@ -16,8 +18,9 @@ class HackathonService:
 
     @staticmethod
     def create_hackathon(data: HackathonCreateSchema) -> Hackathon:
-        if data.min_team_size > data.max_team_size:
-            raise Teamsizelimit("Minimum Team size should be lower")
+        if data.participation_type == "Team":
+            if data.min_team_size > data.max_team_size:
+                raise Teamsizelimit("Minimum Team size should be lower")
 
         hackathon = Hackathon(
             id=str(uuid.uuid4()),
@@ -243,3 +246,40 @@ class HackathonService:
         except SQLAlchemyError:
             db.session.rollback()
             raise HackathonCreateError("Failed to update interest.")
+
+    @staticmethod
+    def refresh_hackathon_status(hackathon_id: str) -> Hackathon:
+        hackathon = Hackathon.query.get(hackathon_id)
+
+        if not hackathon:
+            raise HackathonNotFoundError("Hackathon not found.")
+
+        # If dates are not set, do nothing
+        if not hackathon.start_date or not hackathon.end_date:
+            return hackathon
+
+        now = datetime.utcnow() 
+
+        # Normalize datetimes (important if DB is naive)
+        start = hackathon.start_date
+        end = hackathon.end_date
+
+        new_status = hackathon.status
+
+        if now < start:
+            new_status = "upcoming"
+        elif start <= now <= end:
+            new_status = "ongoing"
+        elif now > end:
+            new_status = "completed"
+
+        # Idempotent update (no unnecessary writes)
+        if hackathon.status != new_status:
+            hackathon.status = new_status
+            try:
+                db.session.commit()
+            except SQLAlchemyError:
+                db.session.rollback()
+                raise HackathonCreateError("Failed to update hackathon status.")
+
+        return hackathon

@@ -19,8 +19,8 @@ def create_app():
 
      # 🔥 IMPORT ALL MODELS HERE BEFORE MIGRATION
     from app.modules.users.models import User
-    from app.modules.hackathons.models import Hackathon,HackathonInterest   
-    
+    from app.modules.hackathons.models import Hackathon,HackathonInterest 
+    from app.modules.winners.models import Winner
     migrate.init_app(app, db)
     jwt.init_app(app)
     bcrypt.init_app(app)
