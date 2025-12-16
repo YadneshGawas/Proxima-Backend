@@ -119,3 +119,13 @@ def toggle_interest(hackathon_id):
 
     return jsonify(result), 200
 
+
+@hackathon_bp.route("/<hackathon_id>/refresh-status", methods=["PATCH"])
+@jwt_required()
+def refresh_hackathon_status(hackathon_id):
+    hackathon = HackathonService.refresh_hackathon_status(hackathon_id)
+
+    return jsonify({
+        "id": hackathon.id,
+        "status": hackathon.status
+    }), 200

@@ -10,7 +10,7 @@ def check_password(hashed_password: str, password: str) -> bool:
     """Check a plaintext password against the hashed version."""
     return bcrypt.check_password_hash(hashed_password, password)
 
-def generate_access_token(user_id: int, expires_delta=timedelta(hours=1)) -> str:
+def generate_access_token(user_id: int, expires_delta=timedelta(hours=2)) -> str:
     """Generate a JWT access token for a given user ID."""
     access_token = create_access_token(identity=user_id, expires_delta=expires_delta)
     return access_token

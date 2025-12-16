@@ -34,7 +34,8 @@ class HackathonRegistration(db.Model):
 
     # relationships
     hackathon = db.relationship("Hackathon", backref="registrations")
-    user = db.relationship("User", backref="individual_registrations")
+    
+    user = db.relationship("User", lazy="joined",backref="individual_registrations")
     team = db.relationship("HackathonTeam", backref="team_registrations")
 
     __table_args__ = (
