@@ -12,7 +12,7 @@ def create_app():
 
     CORS(
     app,
-    origins=["http://localhost:8080"],
+    origins=["http://localhost:8080","https://proximav1.vercel.app/","https://proximav1.vercel.app"],
     supports_credentials=True
     )
 
